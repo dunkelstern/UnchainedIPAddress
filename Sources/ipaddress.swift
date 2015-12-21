@@ -12,6 +12,26 @@
     import Darwin.C
 #endif
 
+extension UInt16 {
+    func hexString(padded padded:Bool = true) -> String {
+        let dict:[Character] = [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"]
+        var result = ""
+        var somethingWritten = false
+        for i in 0...3 {
+            let value = Int(self >> UInt16(((3 - i) * 4)) & 0xf)
+            if !padded && !somethingWritten && value == 0 {
+                continue
+            }
+            somethingWritten = true
+            result.append(dict[value])
+        }
+        if (result.characters.count == 0) {
+            return "0"
+        }
+        return result
+    }
+}
+
 public enum IPAddress {
     case IPv4(_: UInt8, _: UInt8, _: UInt8, _: UInt8)
     case IPv6(_: UInt16, _: UInt16, _: UInt16, _: UInt16, _: UInt16, _: UInt16, _: UInt16, _: UInt16)
@@ -146,7 +166,7 @@ extension in_addr: CustomStringConvertible {
         var result = [CChar](count: Int(INET_ADDRSTRLEN), repeatedValue: 0)
         var copy = self
         inet_ntop(AF_INET, &copy, &result, socklen_t(INET_ADDRSTRLEN))
-        if let string = String(CString: result, encoding: NSUTF8StringEncoding) {
+        if let string = String.fromCString(result) {
             return string
         }
         return "<in_addr: invalid>"
@@ -158,7 +178,7 @@ extension in6_addr: CustomStringConvertible {
         var result = [CChar](count: Int(INET6_ADDRSTRLEN), repeatedValue: 0)
         var copy = self
         inet_ntop(AF_INET6, &copy, &result, socklen_t(INET6_ADDRSTRLEN))
-        if let string = String(CString: result, encoding: NSUTF8StringEncoding) {
+        if let string = String.fromCString(result) {
             return string
         }
         return "<in6_addr: invalid>"
@@ -170,8 +190,13 @@ extension sockaddr_storage: CustomStringConvertible {
         var copy = self
         let result:String = withUnsafePointer(&copy) { ptr in
             var host = [CChar](count: 1000, repeatedValue: 0)
-            if getnameinfo(UnsafeMutablePointer(ptr), socklen_t(copy.ss_len), &host, 1000, nil, 0, NI_NUMERICHOST) == 0 {
-                return String(CString: host, encoding: NSUTF8StringEncoding)!
+            #if os(Linux)
+                let len = socklen_t(_SS_SIZE)
+            #else
+                let len = socklen_t(copy.ss_len)
+            #endif
+            if getnameinfo(UnsafeMutablePointer(ptr), len, &host, 1000, nil, 0, NI_NUMERICHOST) == 0 {
+                return String.fromCString(host)!
             } else {
                 return "<sockaddr: invalid>"
             }

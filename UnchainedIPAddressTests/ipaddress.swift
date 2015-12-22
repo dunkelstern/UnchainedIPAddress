@@ -7,19 +7,18 @@
 //
 
 import XCTest
-@testable import twohundred
+@testable import UnchainedIPAddress
 
-class twohundredTests: XCTestCase {
-    
-    override func setUp() {
-        super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
-    
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
-    }
+class IPAddressTests: XCTestCase {
+
+    var allTests : [(String, () -> Void)] {
+		return [
+			("testIPv4FromString", testIPv4FromString),
+			("testIPv4ToString", testIPv4ToString),
+			("testIPv6FromString", testIPv6FromString),
+			("testIPv6FromString2", testIPv6FromString2)
+		]
+	}
     
     func testIPv4FromString() {
         guard let ip = IPAddress(fromString: "127.0.0.1") else {

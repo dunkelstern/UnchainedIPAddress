@@ -7,10 +7,12 @@
 //
 
 #if os(Linux)
-    import Glibc
+    import UnchainedGlibc
 #else
     import Darwin.C
 #endif
+
+import UnchainedString
 
 extension UInt16 {
     func hexString(padded padded:Bool = true) -> String {
@@ -39,18 +41,18 @@ public enum IPAddress {
     
     public init?(fromString inputString: String) {
         var fromString = inputString
-        if fromString.hasPrefix("::ffff:") {
+        if fromString.isPrefixed("::ffff:") {
             // special case, this is a IPv4 address returned from the IPv6 stack
-            fromString = inputString.substringFromIndex(inputString.startIndex.advancedBy(7)).stringByReplacingOccurrencesOfString(":", withString: ".")
+            fromString = inputString.subString(fromIndex: inputString.startIndex.advancedBy(7)).stringByReplacing(":", replacement: ".")
         }
 
-        if fromString.containsString(":") {
+        if fromString.contains(":") {
             // IPv6
             var components: [String]
-            if fromString.hasPrefix("::") {
-                components = fromString.substringFromIndex(fromString.startIndex.advancedBy(1)).componentsSeparatedByString(":")
+            if fromString.isPrefixed("::") {
+                components = fromString.subString(fromIndex: fromString.startIndex.advancedBy(1)).split(":")
             } else {
-                components = fromString.componentsSeparatedByString(":")
+                components = fromString.split(":")
                 if components.count > 8 || components.count < 1 {
                     return nil
                 }
@@ -78,7 +80,7 @@ public enum IPAddress {
             self = .IPv6(segments[0], segments[1], segments[2], segments[3], segments[4], segments[5], segments[6], segments[7])
         } else {
             // IPv4
-            let components = fromString.componentsSeparatedByString(".")
+            let components = fromString.split(".")
             if components.count != 4 {
                 return nil
             }
@@ -151,8 +153,8 @@ extension IPAddress: CustomStringConvertible {
                 }
                 result = ":" + segment.hexString(padded: false) + result
             }
-            if !result.hasPrefix("::") {
-                result = result.substringFromIndex(result.startIndex.advancedBy(1))
+            if !result.isPrefixed("::") {
+                result = result.subString(fromIndex: result.startIndex.advancedBy(1))
             }
             return result
         case .Wildcard:

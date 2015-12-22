@@ -9,5 +9,13 @@
 import PackageDescription
 
 let package = Package(
-    name: "UnchainedIPAddress"
+    name: "UnchainedIPAddress",
+    targets: [
+        Target(name:"UnchainedIPAddressTests", dependencies: [.Target(name: "UnchainedIPAddress")]),
+        Target(name:"UnchainedIPAddress")
+    ],
+    dependencies: [
+		.Package(url: "https://github.com/dunkelstern/UnchainedGlibc.git", majorVersion: 0),
+		.Package(url: "https://github.com/dunkelstern/UnchainedString.git", majorVersion: 0)
+    ]
 )

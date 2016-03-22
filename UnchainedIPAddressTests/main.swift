@@ -9,4 +9,4 @@
 import XCTest
 
 print("Starting tests...")
-XCTMain([IPAddressTests()])
+XCTMain([testCase(IPAddressTests.allTests)])

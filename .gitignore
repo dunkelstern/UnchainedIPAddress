@@ -1,2 +1,6 @@
 .build
 Packages/
+.atllbuild/
+UnchainedIPAddress.sublime-workspace
+bin/
+external/

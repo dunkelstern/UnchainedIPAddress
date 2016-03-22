@@ -1,0 +1,18 @@
+;; Anarchy Tools Package Manager lock file
+;;
+;; If you want to pin a package to a git commit add a ':pin-commit'
+;; line to that package definition. This will override all version
+;; information the build files specify.
+;;
+;; You may override the repository URL for a package by specifying
+;; it in an ':override-url' line. This is very handy if you develop
+;; the dependency in parallel to the package that uses it
+
+(lock-file
+  :packages [
+    {
+      :url "https://github.com/dunkelstern/UnchainedString.git"
+      :used-commit "c47dcb77e32860d0f791f81edcfe7d777fe40323"
+    }
+  ]
+)

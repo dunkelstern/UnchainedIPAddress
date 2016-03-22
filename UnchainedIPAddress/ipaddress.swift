@@ -7,7 +7,7 @@
 //
 
 #if os(Linux)
-    import UnchainedGlibc
+    import Glibc
 #else
     import Darwin.C
 #endif
@@ -41,16 +41,16 @@ public enum IPAddress {
     
     public init?(fromString inputString: String) {
         var fromString = inputString
-        if fromString.isPrefixed("::ffff:") {
+        if fromString.hasPrefix("::ffff:") {
             // special case, this is a IPv4 address returned from the IPv6 stack
-            fromString = inputString.subString(fromIndex: inputString.startIndex.advancedBy(7)).stringByReplacing(":", replacement: ".")
+            fromString = inputString.subString(fromIndex: inputString.startIndex.advanced(by: 7)).stringByReplacing(":", replacement: ".")
         }
 
         if fromString.contains(":") {
             // IPv6
             var components: [String]
-            if fromString.isPrefixed("::") {
-                components = fromString.subString(fromIndex: fromString.startIndex.advancedBy(1)).split(":")
+            if fromString.hasPrefix("::") {
+                components = fromString.subString(fromIndex: fromString.startIndex.advanced(by: 1)).split(":")
             } else {
                 components = fromString.split(":")
                 if components.count > 8 || components.count < 1 {
@@ -153,8 +153,8 @@ extension IPAddress: CustomStringConvertible {
                 }
                 result = ":" + segment.hexString(padded: false) + result
             }
-            if !result.isPrefixed("::") {
-                result = result.subString(fromIndex: result.startIndex.advancedBy(1))
+            if !result.hasPrefix("::") {
+                result = result.subString(fromIndex: result.startIndex.advanced(by: 1))
             }
             return result
         case .Wildcard:
@@ -165,10 +165,10 @@ extension IPAddress: CustomStringConvertible {
 
 extension in_addr: CustomStringConvertible {
     public var description: String {
-        var result = [CChar](count: Int(INET_ADDRSTRLEN), repeatedValue: 0)
+        var result = [CChar](repeating: 0, count: Int(INET_ADDRSTRLEN))
         var copy = self
         inet_ntop(AF_INET, &copy, &result, socklen_t(INET_ADDRSTRLEN))
-        if let string = String.fromCString(result) {
+        if let string = String(validatingUTF8: result) {
             return string
         }
         return "<in_addr: invalid>"
@@ -177,10 +177,10 @@ extension in_addr: CustomStringConvertible {
 
 extension in6_addr: CustomStringConvertible {
     public var description: String {
-        var result = [CChar](count: Int(INET6_ADDRSTRLEN), repeatedValue: 0)
+        var result = [CChar](repeating: 0, count: Int(INET6_ADDRSTRLEN))
         var copy = self
         inet_ntop(AF_INET6, &copy, &result, socklen_t(INET6_ADDRSTRLEN))
-        if let string = String.fromCString(result) {
+        if let string = String(validatingUTF8: result) {
             return string
         }
         return "<in6_addr: invalid>"
@@ -191,14 +191,14 @@ extension sockaddr_storage: CustomStringConvertible {
     public var description: String {
         var copy = self
         let result:String = withUnsafePointer(&copy) { ptr in
-            var host = [CChar](count: 1000, repeatedValue: 0)
+            var host = [CChar](repeating: 0, count: 1000)
             #if os(Linux)
                 let len = socklen_t(_SS_SIZE)
             #else
                 let len = socklen_t(copy.ss_len)
             #endif
             if getnameinfo(UnsafeMutablePointer(ptr), len, &host, 1000, nil, 0, NI_NUMERICHOST) == 0 {
-                return String.fromCString(host)!
+                return String(validatingUTF8: host)!
             } else {
                 return "<sockaddr: invalid>"
             }

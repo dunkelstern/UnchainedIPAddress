@@ -1,0 +1,45 @@
+(package
+  :name "unchainedipaddress"
+  
+  :external-packages [
+    {
+      :url "https://github.com/dunkelstern/UnchainedString.git"
+      :version [ ">=1.0.0" ]
+    }
+  ]
+
+  :tasks {
+    :default {
+      :tool "atllbuild"
+      :sources ["UnchainedIPAddress/**.swift"]
+      :name "UnchainedIPAddress"
+      :output-type "static-library"
+      :publish-product true
+      :compile-options ["-enable-testing" "-Xcc" "-D_GNU_SOURCE"]
+      :link-with ["UnchainedString.a"]
+      :dependencies ["UnchainedString.default"]
+    }
+
+    :check {
+      :tool "nop"
+      :dependencies ["run-tests"]
+    }
+
+    :build-tests {
+      :tool "atllbuild"
+      :sources ["UnchainedIPAddressTests/**.swift"]
+      :output-type "executable"
+      :name "tests"
+      :dependencies ["default"]
+      :xctestify true
+      :xctest-strict true
+      :link-with ["UnchainedIPAddress.a" "UnchainedString.a"]
+    }
+
+    :run-tests {
+      :tool "xctestrun"
+      :test-executable ".atllbuild/products/tests"
+      :dependencies ["build-tests"]
+    }
+  }
+)

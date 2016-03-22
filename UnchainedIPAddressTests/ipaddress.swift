@@ -11,16 +11,7 @@ import XCTest
 
 class IPAddressTests: XCTestCase {
 
-    var allTests : [(String, () -> Void)] {
-		return [
-			("testIPv4FromString", testIPv4FromString),
-			("testIPv4ToString", testIPv4ToString),
-			("testIPv6FromString", testIPv6FromString),
-			("testIPv6FromString2", testIPv6FromString2)
-		]
-	}
-    
-    func testIPv4FromString() {
+    func testIPv4FromString() throws {
         guard let ip = IPAddress(fromString: "127.0.0.1") else {
             XCTFail("Could not parse string")
             return
@@ -35,12 +26,12 @@ class IPAddressTests: XCTestCase {
         }
     }
 
-    func testIPv4ToString() {
+    func testIPv4ToString() throws {
         let ip = IPAddress.IPv4(127, 0, 0, 1)
         XCTAssertEqual(ip.description, "127.0.0.1")
     }
 
-    func testIPv6FromString() {
+    func testIPv6FromString() throws {
         guard let ip = IPAddress(fromString: "::1") else {
             XCTFail("Could not parse string")
             return
@@ -59,7 +50,7 @@ class IPAddressTests: XCTestCase {
         }
     }
 
-    func testIPv6FromString2() {
+    func testIPv6FromString2() throws {
         guard let ip = IPAddress(fromString: "1:2:3:4::1") else {
             XCTFail("Could not parse string")
             return
@@ -78,7 +69,7 @@ class IPAddressTests: XCTestCase {
         }
     }
 
-    func testIPv6FromString3() {
+    func testIPv6FromString3() throws {
         guard let ip = IPAddress(fromString: "1:0:0:4::1") else {
             XCTFail("Could not parse string")
             return
@@ -97,7 +88,7 @@ class IPAddressTests: XCTestCase {
         }
     }
 
-    func testIPv6ToString() {
+    func testIPv6ToString() throws {
         var ip = IPAddress.IPv6(0, 0, 0, 0, 0, 0, 0, 1)
         XCTAssertEqual(ip.description, "::1")
 
@@ -108,7 +99,7 @@ class IPAddressTests: XCTestCase {
         XCTAssertEqual(ip.description, "1:0:0:4::1")
     }
     
-    func testIPv4SocketStruct() {
+    func testIPv4SocketStruct() throws {
         let ip = IPAddress.IPv4(127, 0, 0, 1)
         if let sin = ip.sin_addr() {
             XCTAssertEqual(sin.description, "127.0.0.1")
@@ -117,7 +108,7 @@ class IPAddressTests: XCTestCase {
         }
     }
 
-    func testIPv6SocketStruct() {
+    func testIPv6SocketStruct() throws {
         let ip = IPAddress(fromString: "::1")!
         if let sin = ip.sin6_addr() {
             XCTAssertEqual(sin.description, "::1")
@@ -126,7 +117,7 @@ class IPAddressTests: XCTestCase {
         }
     }
     
-    func testWildcards() {
+    func testWildcards() throws {
         let ip = IPAddress.Wildcard
         XCTAssertEqual(ip.description, "*")
         if let sin = ip.sin_addr() {
@@ -140,5 +131,17 @@ class IPAddressTests: XCTestCase {
             XCTFail("Could not convert to socket struct")
         }
     }
-
 }
+
+#if os(Linux)
+extension IPAddressTests {
+    static var allTests : [(String, IPAddressTests -> () throws -> Void)] {
+        return [
+            ("testIPv4FromString", testIPv4FromString),
+            ("testIPv4ToString", testIPv4ToString),
+            ("testIPv6FromString", testIPv6FromString),
+            ("testIPv6FromString2", testIPv6FromString2)
+        ]
+    }
+}
+#endif

@@ -15,7 +15,6 @@ let package = Package(
         Target(name:"UnchainedIPAddress")
     ],
     dependencies: [
-		.Package(url: "https://github.com/dunkelstern/UnchainedGlibc.git", majorVersion: 0),
-		.Package(url: "https://github.com/dunkelstern/UnchainedString.git", majorVersion: 0)
+		.Package(url: "https://github.com/dunkelstern/UnchainedString.git", majorVersion: 1)
     ]
 )
